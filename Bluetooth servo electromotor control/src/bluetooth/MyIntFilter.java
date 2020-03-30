@@ -40,7 +40,14 @@ class MyIntFilter extends DocumentFilter {
 	    			  myNameChars[0] = text.charAt(1);
 	    			  myNameChars[1] = '\0';
 	    			  text = String.valueOf(myNameChars);
-	    		  }	    	  
+	    		  }
+	    			  else if(text.charAt(0) == '0' && text.charAt(1) == '0'){
+	    			    	
+		    			  char[] myNameChars = text.toCharArray();
+		    			  myNameChars[0] = text.charAt(1);
+		    			  myNameChars[1] = '\0';
+		    			  text = String.valueOf(myNameChars);
+		    		  }
 	    	  }
 	    	  if(!text.isEmpty()){
 	    		  
@@ -50,6 +57,7 @@ class MyIntFilter extends DocumentFilter {
 	         return true;
 	    	  
 	      } catch (NumberFormatException e) {
+	    	  
 	         return false;
 	      }
 	   }

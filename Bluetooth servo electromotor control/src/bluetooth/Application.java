@@ -6,5 +6,6 @@ public class Application {
        
 		System.out.println("BLUETOOTH SERVO ELECTROMOTOR CONTROL APLIACTION\n"); 
 		new Gui();
+		
     } 
 }

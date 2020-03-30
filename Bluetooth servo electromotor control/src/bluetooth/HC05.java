@@ -1,175 +1,127 @@
-//http://www.aviyehuda.com/blog/2010/01/08/connecting-to-bluetooth-devices-with-java/
+
 package bluetooth;
 
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-
-import javax.bluetooth.DataElement;
-import javax.bluetooth.DeviceClass;
-import javax.bluetooth.DiscoveryAgent;
-import javax.bluetooth.DiscoveryListener;
-import javax.bluetooth.LocalDevice;
-import javax.bluetooth.RemoteDevice;
-import javax.bluetooth.ServiceRecord;
-import javax.bluetooth.UUID;
 import javax.microedition.io.Connector;
-import javax.obex.ClientSession;
-import javax.obex.HeaderSet;
-import javax.obex.Operation;
-import javax.obex.ResponseCodes;
-
-//import bluetooth.BTListener.MyDeviceListenerFilter;
+import javax.microedition.io.StreamConnection;
 
 public class HC05{
-    
- /*   private static Object lock=new Object();
-    public ArrayList<RemoteDevice> devices;
-    
-    public MyDiscoveryListener() {
-        devices = new ArrayList<RemoteDevice>();
-    }
-    
-    public static void main(String[] args) {
-        
-        MyDiscoveryListener listener =  new MyDiscoveryListener();
-        
-        try{
-            LocalDevice localDevice = LocalDevice.getLocalDevice();
-            DiscoveryAgent agent = localDevice.getDiscoveryAgent();
-            agent.startInquiry(DiscoveryAgent.GIAC, listener);
-            
-            try {
-                synchronized(lock){
-                    lock.wait();
-                }
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-                return;
-            }
-            
-            
-            System.out.println("Device Inquiry Completed. ");
-            
-       
-            UUID[] uuidSet = new UUID[1];
-            uuidSet[0]=new UUID(0x1105); //OBEX Object Push service
-            
-            int[] attrIDs =  new int[] {
-                    0x0100 // Service name
-            };
-            
-            for (RemoteDevice device : listener.devices) {
-                agent.searchServices(
-                        attrIDs,uuidSet,device,listener);
-                
-                
-                try {
-                    synchronized(lock){
-                        lock.wait();
-                    }
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                
-                
-                System.out.println("Service search finished.");
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-  
-
-    @Override
-    public void deviceDiscovered(RemoteDevice btDevice, DeviceClass arg1) {
-        String name;
-        try {
-            name = btDevice.getFriendlyName(false);
-        } catch (Exception e) {
-            name = btDevice.getBluetoothAddress();
-        }
-        
-        devices.add(btDevice);
-        System.out.println("device found: " + name);
-        
-    }
-
-    @Override
-    public void inquiryCompleted(int arg0) {
-        synchronized(lock){
-            lock.notify();
-        }
-    }
-
-    @Override
-    public void serviceSearchCompleted(int arg0, int arg1) {
-        synchronized (lock) {
-            lock.notify();
-        }
-    }
-
-    @Override
-    public void servicesDiscovered(int transID, ServiceRecord[] servRecord) {
-        for (int i = 0; i < servRecord.length; i++) {
-            String url = servRecord[i].getConnectionURL(ServiceRecord.NOAUTHENTICATE_NOENCRYPT, false);
-            if (url == null) {
-                continue;
-            }
-            DataElement serviceName = servRecord[i].getAttributeValue(0x0100);
-            if (serviceName != null) {
-                System.out.println("service " + serviceName.getValue() + " found " + url);
-                
-                if(serviceName.getValue().equals("OBEX Object Push")){
-                    sendMessageToDevice(url);                
-                }
-            } else {
-                System.out.println("service found " + url);
-            }
-            
-          
-        }
-    }
-    
-    private static void sendMessageToDevice(String serverURL){
-        try{
-            System.out.println("Connecting to " + serverURL);
-    
-            ClientSession clientSession = (ClientSession) Connector.open(serverURL);
-            HeaderSet hsConnectReply = clientSession.connect(null);
-            if (hsConnectReply.getResponseCode() != ResponseCodes.OBEX_HTTP_OK) {
-                System.out.println("Failed to connect");
-                return;
-            }
-    
-            HeaderSet hsOperation = clientSession.createHeaderSet();
-            hsOperation.setHeader(HeaderSet.NAME, "Hello.txt");
-            hsOperation.setHeader(HeaderSet.TYPE, "text");
-    
-            //Create PUT Operation
-            Operation putOperation = clientSession.put(hsOperation);
-    
-            // Send some text to server
-            byte data[] = "Hello World !!!".getBytes("iso-8859-1");
-            OutputStream os = putOperation.openOutputStream();
-            os.write(data);
-            os.close();
-    
-            putOperation.close();
-    
-            clientSession.disconnect(null);
-    
-            clientSession.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-*/
+	
+	private String hc05Url = "btspp://98D331408009:1;authenticate=false;encrypt=false;master=false"; //Ovo je URL od BLUETOOTHa
+	
+	private StreamConnection streamConnection;
+	private OutputStream outputStream;
+	private InputStream inputStream;
+	
+	/*public static void main(String[] args){
+			
+		HC05 bt = new HC05();
+		
+		bt.initialize_servo_electromotor();
+		
+		bt.set_servo_electromotor_position_in_degrees("100");
+		
+		String angle = bt.get_servo_electromotor_position_in_degrees();
+		System.out.println("The read data from the terminal = " + angle);
+		
+		bt.uninitialize_servo_electromotor();
+		
+	}*/
+	
+	public HC05(){
+		
+	}
+	
+	public void connect() throws Exception {
+		
+		 streamConnection = (StreamConnection)Connector.open(hc05Url); //konektovao se na bluetooth
+		 outputStream = streamConnection.openOutputStream();
+		 inputStream = streamConnection.openInputStream();
+	}
+	
+	public void writeToTerminal(String input) throws Exception {
+		
+		 input = input + '\r'; 
+		 outputStream.write(input.getBytes());
+		 
+		 Thread.sleep(200);
+		 
+	}
+	
+	public String ReadFromTerminal() throws Exception{
+			
+		byte data[] = new byte[7];
+		
+		Thread.sleep(1000); //ovo treba obrisati
+		
+		inputStream.read(data);
+		
+		String data_string = new String(data);
+		String extracted_data = data_string.substring(data_string.indexOf("\r") + 1, data_string.indexOf("\n"));
+		
+		return extracted_data;
+	}
+	
+	public void disconnect() throws Exception {
+		
+		streamConnection.close();
+	}
+	
+	public void initialize_servo_electromotor() {
+		
+		try {
+			
+			connect();
+		}
+		catch(Exception e) {
+			
+			System.out.println("Initialize servo exception = " + e);
+		}
+	}
+	
+	public void uninitialize_servo_electromotor() {
+		
+		try {
+			
+			disconnect();
+			outputStream.close();
+			inputStream.close();
+		}
+		catch(Exception e) {
+			
+			System.out.println("Uninitialize servo exception = " + e);
+		}
+	}
+	
+	public void set_servo_electromotor_position_in_degrees(String degrees){
+		
+		try {
+			
+			writeToTerminal(degrees);
+		}
+		catch(Exception e) {
+			
+			System.out.println("set servo position exception = " + e);
+		}
+	}
+	
+	public String get_servo_electromotor_position_in_degrees(){
+		
+		String angle = "Error";
+		
+		try {
+		
+			writeToTerminal("G");
+				
+			angle = ReadFromTerminal();
+			angle = angle.replaceAll("\\D+","");
+		}
+		catch(Exception e) {
+			
+			System.out.println("get servo position exception = " + e);
+		}
+		
+		return angle;
+	}
 }
-	
-	
