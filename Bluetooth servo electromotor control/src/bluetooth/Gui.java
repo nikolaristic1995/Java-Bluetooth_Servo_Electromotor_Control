@@ -216,11 +216,11 @@ public class Gui{
 
 					}	
 					
-					else {
+					/*else {
 						
 							input_label.setForeground(Color.ORANGE); 
 							input_label.setText("Warning: Position request same as previous!");		
-					}
+					}*/
 					
 					button_set_position.setSelected(false);
 
