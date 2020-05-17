@@ -1,6 +1,7 @@
 
 package bluetooth;
 
+//import java.awt.Color;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.microedition.io.Connector;
@@ -68,16 +69,22 @@ public class HC05{
 		streamConnection.close();
 	}
 	
-	public void initialize_servo_electromotor() {
+	public boolean initialize_servo_electromotor() {
+	
+	boolean connected = false;
 		
 		try {
 			
 			connect();
+			connected = true;
 		}
 		catch(Exception e) {
 			
 			System.out.println("Initialize servo exception = " + e);
+			connected = false;
 		}
+		
+		return connected;
 	}
 	
 	public void uninitialize_servo_electromotor() {
@@ -94,15 +101,17 @@ public class HC05{
 		}
 	}
 	
-	public void set_servo_electromotor_position_in_degrees(String degrees){
+	boolean set_servo_electromotor_position_in_degrees(String degrees){
 		
 		try {
 			
 			writeToTerminal(degrees);
+			return true;
 		}
 		catch(Exception e) {
 			
 			System.out.println("set servo position exception = " + e);
+			return false;
 		}
 	}
 	

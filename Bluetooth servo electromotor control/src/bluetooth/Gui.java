@@ -3,8 +3,8 @@ package bluetooth;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+/*import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;*/
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -14,25 +14,28 @@ import javax.swing.text.PlainDocument;
 
 public class Gui{
 	
-	private boolean boolSystem_initialized = false;
-	private boolean enable = false;
+	public boolean boolSystem_initialized = false;
+	public boolean boolBluetooth_connected = false;
+	public boolean boolButton_set_position_visible = false;
+	//private boolean enable = false;
 	
-	private int intServo_electromotor_previous_TX = 0;
+	public int intServo_electromotor_previous_TX = 0;
 	
-	private int intServo_electromotor_position_in_degrees_TX = 0; //ono sto treba da se posalje bluetoothom
-	private int intServo_electromotor_position_in_degrees_RX = 0; //ono sto se prima od bluetootha
+	public int intServo_electromotor_position_in_degrees_TX = 0; //ono sto treba da se posalje bluetoothom
+	public int intServo_electromotor_position_in_degrees_RX = 0; //ono sto se prima od bluetootha
 	
-	private JFrame frame;
+	public JFrame frame;
 	
-	private JPanel panel;
+	public JPanel panel;
 	
-	private JTextField text_field; //za input pozicije servo motora
+	public JTextField text_field; //za input pozicije servo motora
 	
-	private ImageIcon picture;
+	public ImageIcon picture;
 	
-	private JLabel input_label;
-	private JLabel position_label;
-	private JLabel picture_label;
+	public JLabel input_label;
+	public JLabel position_label;
+	public JLabel picture_label;
+	public JLabel connected_label;
 
 	public JToggleButton button_set_position;
 	
@@ -43,8 +46,31 @@ public class Gui{
 	
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		HC05 blue_tooth = new HC05();					//bluetooth bojekat
-		blue_tooth.initialize_servo_electromotor();		//otvorio stream za input i output
+		HC05 blue_tooth = new HC05();					//bluetooth objekat
+		
+		/*boolBluetooth_connected = blue_tooth.initialize_servo_electromotor(); //otvaranje streama za input i output
+		
+		connected_label = new JLabel();
+		connected_label.setFont(new Font("Ariel", Font.BOLD, 22));
+		connected_label.setForeground(Color.RED);
+		connected_label.setBounds(20, 130, 600, 50);
+		panel.add(position_label); 
+		
+		connected_label.setVisible(true);
+		//dugme unevidljivi za send
+		if(!boolBluetooth_connected) {
+			
+			
+		}
+		
+		while(!boolBluetooth_connected) {
+			
+			boolBluetooth_connected = blue_tooth.initialize_servo_electromotor();
+			if(boolBluetooth_connected){
+				
+				
+			}
+		}*/		
 		
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
@@ -52,7 +78,7 @@ public class Gui{
 		frame.setSize(690, 470);								//velicina framea
 		frame.setLocation(280, 140); 							//kad se upali aplikacija gde se stvara frame
 		frame.setResizable(false);  							//mala je aplikacija tako da ne mora imati opciju da se resizuje
-		frame.setTitle("Servo electromotor MG996R"); 			//naslov aplikacije
+		frame.setTitle("Servo electromotor MG 996R"); 			//naslov aplikacije
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	//kad iksiras, aplikacija se zavrsila
 		frame.setIconImage(Toolkit.getDefaultToolkit().getImage("C:\\Users\\Nikola\\Desktop\\Java projekti\\Projekti za fakultet\\Bluetooth servo electromotor control\\MG996RIcon.png"));
 																//gorenjom linijom koda sam podesio ikonu aplikacije
@@ -83,7 +109,9 @@ public class Gui{
 					
 	        			input_label.setForeground(Color.GREEN); //labela iznad text fieda je zelena sad
 	        			input_label.setText("Input is valid!");  //ovo sad pise na njoj
-	        			button_set_position.setVisible(true);	//i prikazuje se
+	        			
+	        			if(boolBluetooth_connected)button_set_position.setVisible(true);	//i prikazuje se
+	        			boolButton_set_position_visible = true;
 				
 	        			int input = Integer.parseInt(text_field.getText());  //input je ono sto je ukucano u JTextField
 	        			
@@ -97,6 +125,7 @@ public class Gui{
 	        				input_label.setForeground(Color.RED); //boja errora koji se ispisuje u slucaju da je pogresan input unet u text field
 	        				input_label.setText("Error: Input must be a whole number between 0 and 180!");//eror koji se ispisuje u slucaju da je pogresan input unet u text field
 	        				button_set_position.setVisible(false);//Uklanjanje dugmeta za slanje
+	        				boolButton_set_position_visible = false;
 	        			}
 					
 				}
@@ -107,6 +136,7 @@ public class Gui{
 					input_label.setText("Error: Input cannot contain non-number characters!");	//eror koji se ispisuje u slucaju da je pogresan input unet u text field
         			intServo_electromotor_position_in_degrees_TX = 0;
 					button_set_position.setVisible(false); //Uklanjanje dugmeta za slanje
+					boolButton_set_position_visible = false;
 				}
 	        }
 
@@ -117,7 +147,8 @@ public class Gui{
 					
 	        			input_label.setForeground(Color.GREEN);
 	        			input_label.setText("Input is valid!");
-	        			button_set_position.setVisible(true);
+	        			if(boolBluetooth_connected)button_set_position.setVisible(true);
+	        			boolButton_set_position_visible = true;
 				
 	        			int input = Integer.parseInt(text_field.getText());
 	        			
@@ -131,6 +162,7 @@ public class Gui{
 	        				input_label.setForeground(Color.RED);
 	        				input_label.setText("Error: Input must be a whole number between 0 and 180!");
 	        				button_set_position.setVisible(false);
+	        				boolButton_set_position_visible = false;
 	        			}
 	        			
 	        		}
@@ -141,6 +173,7 @@ public class Gui{
 	        			input_label.setText("Error: Input cannot contain non-number characters!");	
 	        			intServo_electromotor_position_in_degrees_TX = 0;
 	        			button_set_position.setVisible(false);
+	        			boolButton_set_position_visible = true;
 	        		}
 	        	}
 	        
@@ -151,7 +184,8 @@ public class Gui{
 					
 	        			input_label.setForeground(Color.GREEN);
 	        			input_label.setText("Input is valid!");
-	        			button_set_position.setVisible(true);
+	        			if(boolBluetooth_connected)button_set_position.setVisible(true);
+	        			boolButton_set_position_visible = true;
 				
 	        			int input = Integer.parseInt(text_field.getText());
 					
@@ -165,6 +199,7 @@ public class Gui{
 	        				input_label.setForeground(Color.RED);
 	        				input_label.setText("Error: Input must be a whole number between 0 and 180!");
 	        				button_set_position.setVisible(false);
+	        				boolButton_set_position_visible = false;
 	        			}
 					
 	        		}
@@ -175,6 +210,7 @@ public class Gui{
 	        			input_label.setText("Error: Input cannot contain non-number characters!");
 	        			intServo_electromotor_position_in_degrees_TX = 0;
 	        			button_set_position.setVisible(false);
+	        			boolButton_set_position_visible = false;
 	        		}
 	        	}
 	    	});
@@ -188,6 +224,7 @@ public class Gui{
 	
 		button_set_position = new JToggleButton("SET POSITION");
 		button_set_position.setVisible(false);
+		boolButton_set_position_visible = false;
 		
 		button_set_position.setFont(new Font("Ariel", Font.BOLD, 20));
 		
@@ -207,13 +244,13 @@ public class Gui{
 						intServo_electromotor_previous_TX = intServo_electromotor_position_in_degrees_TX;
 						
 						String TX = Integer.toString(intServo_electromotor_position_in_degrees_TX);
-						blue_tooth.set_servo_electromotor_position_in_degrees(TX);
+						if(blue_tooth.set_servo_electromotor_position_in_degrees(TX)){
 					
 						String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
 						intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
 				
 						position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
-
+						}
 					}	
 					
 					/*else {
@@ -253,19 +290,48 @@ public class Gui{
 		panel.add(picture_label); 
 
 		frame.setVisible(true);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
+
+		connected_label = new JLabel();
+		connected_label.setFont(new Font("Ariel", Font.BOLD, 22));
+		connected_label.setForeground(Color.RED);
+		connected_label.setBounds(480, 370, 600, 50);
+		panel.add(connected_label); 
+		connected_label.setVisible(true);
+		
+		//button_set_position.setVisible(false);
+		connected_label.setText("DISCONNECTED");
+		
+		boolBluetooth_connected = blue_tooth.initialize_servo_electromotor(); //otvaranje streama za input i output
+		
+
+		if(boolBluetooth_connected) {
+			
+			connected_label.setForeground(Color.GREEN);
+			connected_label.setText("CONNECTED");
+			if(boolButton_set_position_visible)button_set_position.setVisible(true);
+			
+			/*String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+			intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+	
+			position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+		*/}
+
+		while(!boolBluetooth_connected) {
+			
+			boolBluetooth_connected = blue_tooth.initialize_servo_electromotor();
+			
+			if(boolBluetooth_connected){
+				
+				connected_label.setForeground(Color.GREEN);
+				connected_label.setText("CONNECTED");
+				if(boolButton_set_position_visible)button_set_position.setVisible(true);
+				
+				/*String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+				intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+		
+				position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+			*/}
+		}
 	}
 }
-
-
-/*	        			if(intServo_electromotor_position_in_degrees_TX == intServo_electromotor_previous_TX && !boolSystem_initialized){
-	        				
-	        				input_label.setForeground(Color.YELLOW); //boja errora koji se ispisuje u slucaju da je pogresan input unet u text field
-	        				input_label.setText("Warrning: Servo electromotor is already at current position");//eror koji se ispisuje u slucaju da je pogresan input unet u text field
-	        				//button_set_position.setVisible(false);//Uklanjanje dugmeta za slanje	
-	        			}
-	        			
-	        			else {
-	        				
-	        				input_label.setForeground(Color.GREEN); //labela iznad text fieda je zelena sad
-	        				input_label.setText("Input is valid!");  //ovo sad pise na njoj
-	        			}*/
