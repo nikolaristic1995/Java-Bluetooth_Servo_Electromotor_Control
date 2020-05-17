@@ -77,6 +77,7 @@ public class HC05{
 			
 			connect();
 			connected = true;
+			System.out.println("Servo electromotor is initialized");
 		}
 		catch(Exception e) {
 			
@@ -94,6 +95,7 @@ public class HC05{
 			disconnect();
 			outputStream.close();
 			inputStream.close();
+			System.out.println("Servo electromotor is uninitialized");
 		}
 		catch(Exception e) {
 			

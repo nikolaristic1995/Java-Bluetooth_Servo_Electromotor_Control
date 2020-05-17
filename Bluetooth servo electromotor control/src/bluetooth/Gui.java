@@ -14,30 +14,30 @@ import javax.swing.text.PlainDocument;
 
 public class Gui{
 	
-	public boolean boolSystem_initialized = false;
-	public boolean boolBluetooth_connected = false;
-	public boolean boolButton_set_position_visible = false;
+	private boolean boolSystem_initialized = false;
+	private boolean boolBluetooth_connected = false;
+	private boolean boolButton_set_position_visible = false;
 	//private boolean enable = false;
 	
-	public int intServo_electromotor_previous_TX = 0;
+	private int intServo_electromotor_previous_TX = 0;
 	
-	public int intServo_electromotor_position_in_degrees_TX = 0; //ono sto treba da se posalje bluetoothom
-	public int intServo_electromotor_position_in_degrees_RX = 0; //ono sto se prima od bluetootha
+	private int intServo_electromotor_position_in_degrees_TX = 0; //ono sto treba da se posalje bluetoothom
+	private int intServo_electromotor_position_in_degrees_RX = 0; //ono sto se prima od bluetootha
 	
-	public JFrame frame;
+	private JFrame frame;
 	
-	public JPanel panel;
+	private JPanel panel;
 	
-	public JTextField text_field; //za input pozicije servo motora
+	private JTextField text_field; //za input pozicije servo motora
 	
-	public ImageIcon picture;
+	private ImageIcon picture;
 	
-	public JLabel input_label;
-	public JLabel position_label;
-	public JLabel picture_label;
-	public JLabel connected_label;
+	private JLabel input_label;
+	private JLabel position_label;
+	private JLabel picture_label;
+	private JLabel connected_label;
 
-	public JToggleButton button_set_position;
+	private JToggleButton button_set_position;
 	
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,6 +93,7 @@ public class Gui{
 		input_label = new JLabel("Input a whole number between 0 and 180:"); //napravljena labela iznad text fileda
 		input_label.setFont(new Font("Ariel", Font.BOLD, 22));				 //podesio sam joj font
 		input_label.setForeground(Color.BLACK);								 //podesio sam boju labele
+		input_label.setVisible(false);
 		
 		text_field = new JTextField();						//ovde treba da stoji trenutna pozicija od motora pokupljena bluetoothom
 		text_field.setFont(new Font("Ariel", Font.BOLD, 22));//podesio font inputa u text field
@@ -111,8 +112,10 @@ public class Gui{
 	        			input_label.setText("Input is valid!");  //ovo sad pise na njoj
 	        			
 	        			if(boolBluetooth_connected)button_set_position.setVisible(true);	//i prikazuje se
+	        			
 	        			boolButton_set_position_visible = true;
-				
+	        			connected_label.setVisible(false);
+	        			
 	        			int input = Integer.parseInt(text_field.getText());  //input je ono sto je ukucano u JTextField
 	        			
 	        			if(input >= 0 && input <= 180){ //ako je input izmedju 0 i 180
@@ -149,7 +152,8 @@ public class Gui{
 	        			input_label.setText("Input is valid!");
 	        			if(boolBluetooth_connected)button_set_position.setVisible(true);
 	        			boolButton_set_position_visible = true;
-				
+	        			connected_label.setVisible(false);
+	        			
 	        			int input = Integer.parseInt(text_field.getText());
 	        			
 	        			if(input >= 0 && input <= 180){
@@ -186,6 +190,7 @@ public class Gui{
 	        			input_label.setText("Input is valid!");
 	        			if(boolBluetooth_connected)button_set_position.setVisible(true);
 	        			boolButton_set_position_visible = true;
+	        			connected_label.setVisible(false);
 				
 	        			int input = Integer.parseInt(text_field.getText());
 					
@@ -246,11 +251,108 @@ public class Gui{
 						String TX = Integer.toString(intServo_electromotor_position_in_degrees_TX);
 						if(blue_tooth.set_servo_electromotor_position_in_degrees(TX)){
 					
-						String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
-						intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
-				
-						position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+							String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+							
+							if(!RX.equals("Error")) {
+							
+								intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+								position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+							}
+							
+							else { //RX
+								
+								connected_label.setForeground(Color.RED);
+								connected_label.setText("DISCONNECTED");
+								button_set_position.setVisible(false);
+								
+								blue_tooth.uninitialize_servo_electromotor();
+								
+								/////////////////////////////////////////////////////////////////////////
+								boolBluetooth_connected = false;
+								boolBluetooth_connected = blue_tooth.initialize_servo_electromotor(); //otvaranje streama za input i output
+								
+
+								if(boolBluetooth_connected) {
+									
+									connected_label.setForeground(Color.GREEN);
+									connected_label.setText("CONNECTED");
+									if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+									connected_label.setVisible(false);
+								}
+
+								while(!boolBluetooth_connected) {
+									
+									boolBluetooth_connected = blue_tooth.initialize_servo_electromotor();
+									
+									if(boolBluetooth_connected){
+										
+										connected_label.setForeground(Color.GREEN);
+										connected_label.setText("CONNECTED");
+										if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+										connected_label.setVisible(false);
+									}
+								}								
+								/////////////////////////////////////////////////////////////////////////
+								connected_label.setForeground(Color.GREEN);
+								connected_label.setText("RECONNECTED");
+								connected_label.setVisible(true);
+								
+								blue_tooth.set_servo_electromotor_position_in_degrees(TX);
+								RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+								intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+								position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+							
+								//intServo_electromotor_previous_TX = 181;
+							} //RX
 						}
+						
+						else { //TX
+							
+							connected_label.setForeground(Color.RED);
+							connected_label.setText("DISCONNECTED");
+							button_set_position.setVisible(false);
+							
+							blue_tooth.uninitialize_servo_electromotor();
+							
+///////////////////////////////////////////////////////////////////////////////////////////
+							boolBluetooth_connected = false;
+							boolBluetooth_connected = blue_tooth.initialize_servo_electromotor(); //otvaranje streama za input i output
+							
+
+							if(boolBluetooth_connected) {
+								
+								connected_label.setForeground(Color.GREEN);
+								connected_label.setText("CONNECTED");
+								if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+								connected_label.setVisible(false);
+							}
+
+							while(!boolBluetooth_connected) {
+								
+								boolBluetooth_connected = blue_tooth.initialize_servo_electromotor();
+								
+								if(boolBluetooth_connected){
+									
+									connected_label.setForeground(Color.GREEN);
+									connected_label.setText("CONNECTED");
+									if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+									connected_label.setVisible(false);
+								}
+							}							
+///////////////////////////////////////////////////////////////////////////////////////////
+							
+							
+							connected_label.setForeground(Color.GREEN);
+							connected_label.setText("RECONNECTED");
+							connected_label.setVisible(true);
+							
+							blue_tooth.set_servo_electromotor_position_in_degrees(TX);
+							String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+							intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+							position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+							
+							//intServo_electromotor_previous_TX = 181;
+						}//TX
 					}	
 					
 					/*else {
@@ -292,13 +394,15 @@ public class Gui{
 		frame.setVisible(true);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////		
 
+		text_field.setVisible(false);
+		
 		connected_label = new JLabel();
 		connected_label.setFont(new Font("Ariel", Font.BOLD, 22));
 		connected_label.setForeground(Color.RED);
 		connected_label.setBounds(480, 370, 600, 50);
 		panel.add(connected_label); 
 		connected_label.setVisible(true);
-		
+
 		//button_set_position.setVisible(false);
 		connected_label.setText("DISCONNECTED");
 		
@@ -307,15 +411,20 @@ public class Gui{
 
 		if(boolBluetooth_connected) {
 			
+			blue_tooth.set_servo_electromotor_position_in_degrees("0");
+			String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+			intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+			position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+			
 			connected_label.setForeground(Color.GREEN);
 			connected_label.setText("CONNECTED");
-			if(boolButton_set_position_visible)button_set_position.setVisible(true);
+			if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+			connected_label.setVisible(false);
 			
-			/*String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
-			intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
-	
-			position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
-		*/}
+			input_label.setVisible(true);
+			text_field.setVisible(true);
+			
+		}
 
 		while(!boolBluetooth_connected) {
 			
@@ -323,15 +432,20 @@ public class Gui{
 			
 			if(boolBluetooth_connected){
 				
+				blue_tooth.set_servo_electromotor_position_in_degrees("0");
+				String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
+				intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
+				position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
+				
 				connected_label.setForeground(Color.GREEN);
 				connected_label.setText("CONNECTED");
-				if(boolButton_set_position_visible)button_set_position.setVisible(true);
+				if(boolButton_set_position_visible)button_set_position.setVisible(true); //dodati poziciju ispis
+				connected_label.setVisible(false);
 				
-				/*String RX = blue_tooth.get_servo_electromotor_position_in_degrees();
-				intServo_electromotor_position_in_degrees_RX = Integer.parseInt(RX);
-		
-				position_label.setText("Servo electromotor current position is " + intServo_electromotor_position_in_degrees_RX + "°.");
-			*/}
+				input_label.setVisible(true);
+				text_field.setVisible(true);
+				
+			}
 		}
 	}
 }
